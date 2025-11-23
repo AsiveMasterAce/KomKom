@@ -1,9 +1,9 @@
 ﻿<Window x:Class="KomKom.AddTaskDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
         Title="Add New Task" 
-        Height="400" 
-        Width="500"
+        Height="450" Width="500"
         WindowStartupLocation="CenterOwner"
         Background="#F5F7FA"
         ResizeMode="NoResize">
@@ -20,9 +20,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" 
-                                CornerRadius="8" 
-                                Padding="{TemplateBinding Padding}">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </ControlTemplate>
@@ -53,11 +51,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
-                        <Border Background="White" 
-                                BorderBrush="{TemplateBinding BorderBrush}" 
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="8"
-                                Padding="{TemplateBinding Padding}">
+                        <Border Background="White" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8" Padding="{TemplateBinding Padding}">
                             <ScrollViewer x:Name="PART_ContentHost"/>
                         </Border>
                     </ControlTemplate>
@@ -78,10 +72,7 @@
         </Style>
     </Window.Resources>
 
-    <Border Background="White" 
-            CornerRadius="12" 
-            Margin="20"
-            Padding="24">
+    <Border Background="White" CornerRadius="12" Margin="20" Padding="24">
         <Border.Effect>
             <DropShadowEffect Color="#000000" Opacity="0.1" BlurRadius="20" ShadowDepth="4"/>
         </Border.Effect>
@@ -95,33 +86,21 @@
 
             <!-- Header -->
             <StackPanel Grid.Row="0" Margin="0,0,0,24">
-                <TextBlock Text="📝 Create New Task" 
-                           FontSize="22" 
-                           FontWeight="Bold" 
-                           Foreground="#1F2937"/>
-                <TextBlock Text="Fill in the details for your task" 
-                           FontSize="13" 
-                           Foreground="#6B7280" 
-                           Margin="0,4,0,0"/>
+                <TextBlock Text="📝 Create New Task" FontSize="22" FontWeight="Bold" Foreground="#1F2937"/>
+                <TextBlock Text="Fill in the details for your task" FontSize="13" Foreground="#6B7280" Margin="0,4,0,0"/>
             </StackPanel>
 
             <!-- Form -->
             <StackPanel Grid.Row="1">
                 <!-- Task Title -->
                 <TextBlock Text="Task Title" Style="{StaticResource ModernLabel}"/>
-                <TextBox x:Name="TitleTextBox" 
-                         Style="{StaticResource ModernTextBox}"
-                         Margin="0,0,0,20"
-                         Text="New Task"/>
+                <TextBox x:Name="TitleTextBox" Style="{StaticResource ModernTextBox}" Margin="0,0,0,20" Text="New Task"/>
+
+                <!-- Start Date -->
+                <TextBlock Text="Start Date" Style="{StaticResource ModernLabel}"/>
+                <DatePicker x:Name="StartDatePicker" SelectedDate="{x:Static sys:DateTime.Today}" Height="40" Margin="0,0,0,12"/>
 
                 <!-- Start Time -->
-                <TextBlock Text="Start Time" Style="{StaticResource ModernLabel}"/>
-                <DatePicker x:Name="StartDatePicker" 
-                    SelectedDate="{Binding StartTime, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                    FontSize="14"
-                    Margin="0,0,0,12"
-                    Height="40"/>
-
                 <Grid Margin="0,0,0,20">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -131,42 +110,66 @@
 
                     <StackPanel Grid.Column="0">
                         <TextBlock Text="Hour" Style="{StaticResource ModernLabel}"/>
-                        <TextBox x:Name="HourTextBox" 
-                                 Style="{StaticResource ModernTextBox}"
-                                 Text="9"/>
+                        <ComboBox x:Name="HourComboBox" Height="40" SelectedIndex="9">
+                            <ComboBox.Items>
+                                <sys:Int32>0</sys:Int32>
+                                <sys:Int32>1</sys:Int32>
+                                <sys:Int32>2</sys:Int32>
+                                <sys:Int32>3</sys:Int32>
+                                <sys:Int32>4</sys:Int32>
+                                <sys:Int32>5</sys:Int32>
+                                <sys:Int32>6</sys:Int32>
+                                <sys:Int32>7</sys:Int32>
+                                <sys:Int32>8</sys:Int32>
+                                <sys:Int32>9</sys:Int32>
+                                <sys:Int32>10</sys:Int32>
+                                <sys:Int32>11</sys:Int32>
+                                <sys:Int32>12</sys:Int32>
+                                <sys:Int32>13</sys:Int32>
+                                <sys:Int32>14</sys:Int32>
+                                <sys:Int32>15</sys:Int32>
+                                <sys:Int32>16</sys:Int32>
+                                <sys:Int32>17</sys:Int32>
+                                <sys:Int32>18</sys:Int32>
+                                <sys:Int32>19</sys:Int32>
+                                <sys:Int32>20</sys:Int32>
+                                <sys:Int32>21</sys:Int32>
+                                <sys:Int32>22</sys:Int32>
+                                <sys:Int32>23</sys:Int32>
+                            </ComboBox.Items>
+                        </ComboBox>
                     </StackPanel>
 
                     <StackPanel Grid.Column="2">
                         <TextBlock Text="Minute" Style="{StaticResource ModernLabel}"/>
-                        <TextBox x:Name="MinuteTextBox" 
-                                 Style="{StaticResource ModernTextBox}"
-                                 Text="0"/>
+                        <ComboBox x:Name="MinuteComboBox" Height="40" SelectedIndex="0">
+                            <ComboBox.Items>
+                                <sys:Int32>0</sys:Int32>
+                                <sys:Int32>5</sys:Int32>
+                                <sys:Int32>10</sys:Int32>
+                                <sys:Int32>15</sys:Int32>
+                                <sys:Int32>20</sys:Int32>
+                                <sys:Int32>25</sys:Int32>
+                                <sys:Int32>30</sys:Int32>
+                                <sys:Int32>35</sys:Int32>
+                                <sys:Int32>40</sys:Int32>
+                                <sys:Int32>45</sys:Int32>
+                                <sys:Int32>50</sys:Int32>
+                                <sys:Int32>55</sys:Int32>
+                            </ComboBox.Items>
+                        </ComboBox>
                     </StackPanel>
                 </Grid>
 
                 <!-- Duration -->
                 <TextBlock Text="Duration (minutes)" Style="{StaticResource ModernLabel}"/>
-                <TextBox x:Name="DurationTextBox" 
-                         Style="{StaticResource ModernTextBox}"
-                         Text="25"/>
+                <TextBox x:Name="DurationTextBox" Style="{StaticResource ModernTextBox}" Text="25"/>
             </StackPanel>
 
             <!-- Action Buttons -->
-            <StackPanel Grid.Row="2" 
-                        Orientation="Horizontal" 
-                        HorizontalAlignment="Right"
-                        Margin="0,24,0,0">
-                <Button Content="Cancel" 
-                        Click="Cancel_Click"
-                        Style="{StaticResource SecondaryButton}"
-                        Width="100"
-                        Height="40"
-                        Margin="0,0,12,0"/>
-                <Button Content="Add Task" 
-                        Click="AddTask_Click"
-                        Style="{StaticResource ModernButton}"
-                        Width="120"
-                        Height="40"/>
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,24,0,0">
+                <Button Content="Cancel" Click="Cancel_Click" Style="{StaticResource SecondaryButton}" Width="100" Height="40" Margin="0,0,12,0"/>
+                <Button Content="Add Task" Click="AddTask_Click" Style="{StaticResource ModernButton}" Width="120" Height="40"/>
             </StackPanel>
         </Grid>
     </Border>

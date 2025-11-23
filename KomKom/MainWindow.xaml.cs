@@ -3,6 +3,7 @@ using KomKom.Repository;
 using KomKom.Services;
 using KomKom.ViewModels;
 using Microsoft.EntityFrameworkCore;
+using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Path = System.IO.Path;
 
 namespace KomKom
 {
@@ -24,21 +26,49 @@ namespace KomKom
         private readonly TaskRepository _repo;
         private readonly TaskSchedulerService _scheduler;
         private readonly TimerService _timer;
-        public MainViewModel DataContext { get; }
-        public MainWindow()
+
+        public MainViewModel ViewModel { get; }
+
+        public MainWindow() : this(GetDefaultDbPath())
+        {
+        }
+
+        // Internal constructor that accepts a database path
+        private MainWindow(string dbPath)
         {
             InitializeComponent();
 
-            var dataPath = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), "TaskSchedulerApp");
-            var dbPath = System.IO.Path.Combine(dataPath, "tasks.db");
+            // Ensure the folder exists
+            var folder = Path.GetDirectoryName(dbPath);
+            if (!Directory.Exists(folder))
+                Directory.CreateDirectory(folder);
+
+            // Create DbContext options with SQLite
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
                 .UseSqlite($"Data Source={dbPath}")
                 .Options;
 
-            _repo = new TaskRepository(new ApplicationDbContext(options));
+
+            // Initialize repository, services, and ViewModel
+            _repo = new TaskRepository(new ApplicationDbContext());
             _timer = new TimerService();
             _scheduler = new TaskSchedulerService(new NotificationService(), _repo);
-            DataContext = new MainViewModel(_repo, _timer, _scheduler);
+            ViewModel = new MainViewModel(_repo, _timer, _scheduler);
+
+            // Set DataContext for data binding
+            this.DataContext = ViewModel;
+        }
+
+        // Helper to get default database path
+        private static string GetDefaultDbPath()
+        {
+            var dataPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "KomKom",
+                "Data"
+            );
+
+            return Path.Combine(dataPath, "tasks.db");
         }
 
     }

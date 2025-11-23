@@ -12,30 +12,30 @@ namespace KomKom.Data
 {
     public class ApplicationDbContext : DbContext
     {
-        private static readonly string _dbPath =
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "tasks.db");
-
+        private readonly string _dbPath;
         public ApplicationDbContext()
-            : base(GetOptions())
         {
-        }
-
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-            : base(options)
-        {
-        }
-
-        private static DbContextOptions<ApplicationDbContext> GetOptions()
-        {
-            // Ensure the Data folder exists
             var dataFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
             if (!Directory.Exists(dataFolder))
                 Directory.CreateDirectory(dataFolder);
 
-            var builder = new DbContextOptionsBuilder<ApplicationDbContext>();
-            builder.UseSqlite($"Data Source={_dbPath}");
+            _dbPath = Path.Combine(dataFolder, "tasks.db");
+        }
 
-            return builder.Options;
+        public ApplicationDbContext(string dbPath)
+        {
+            _dbPath = dbPath;
+
+            // Ensure directory exists
+            var folder = Path.GetDirectoryName(_dbPath);
+            if (!Directory.Exists(folder))
+                Directory.CreateDirectory(folder);
+        }
+
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlite($"Data Source={_dbPath}");
         }
 
         // DbSets
