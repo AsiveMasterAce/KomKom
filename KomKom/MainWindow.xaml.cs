@@ -24,7 +24,6 @@ namespace KomKom
     public partial class MainWindow : Window
     {
         private readonly TaskRepository _repo;
-        private readonly TaskSchedulerService _scheduler;
         private readonly TimerService _timer;
 
         public MainViewModel ViewModel { get; }
@@ -43,17 +42,13 @@ namespace KomKom
             if (!Directory.Exists(folder))
                 Directory.CreateDirectory(folder);
 
-            // Create DbContext options with SQLite
-            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseSqlite($"Data Source={dbPath}")
-                .Options;
-
+            using var context = new ApplicationDbContext(dbPath);
+            context.Database.EnsureCreated();
 
             // Initialize repository, services, and ViewModel
-            _repo = new TaskRepository(new ApplicationDbContext());
+            _repo = new TaskRepository(new ApplicationDbContext(dbPath));
             _timer = new TimerService();
-            _scheduler = new TaskSchedulerService(new NotificationService(), _repo);
-            ViewModel = new MainViewModel(_repo, _timer, _scheduler);
+            ViewModel = new MainViewModel(_repo, _timer);
 
             // Set DataContext for data binding
             this.DataContext = ViewModel;

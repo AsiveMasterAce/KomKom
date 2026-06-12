@@ -19,16 +19,17 @@ namespace KomKom.Repository
 
         public async Task<List<Models.ScheduledTask>> GetAllTasksAsync()
         {
-            return await _context.Tasks.OrderBy(t => t.StartTime).AsNoTracking().ToListAsync();
+            return await _context.Tasks
+                .OrderBy(t => t.Completed)
+                .ThenByDescending(t => t.DurationMinutes)
+                .ThenBy(t => t.Title)
+                .AsNoTracking()
+                .ToListAsync();
         }
 
         public async Task<IEnumerable<ScheduledTask>> GetPendingTasks()
         {
-            return await _context.Tasks
-                .Where(t => !t.Completed && t.StartTime >= DateTime.Now)
-                .OrderBy(t => t.StartTime)
-                .AsNoTracking()
-                .ToListAsync();
+            return await Task.FromResult(Enumerable.Empty<ScheduledTask>());
         }
 
         public async Task AddTaskAsync(ScheduledTask task)

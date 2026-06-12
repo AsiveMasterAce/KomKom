@@ -6,11 +6,11 @@ namespace KomKom
 {
     public partial class AddTaskDialog : Window, INotifyPropertyChanged
     {
-        public string TaskTitle { get; private set; }
-        public DateTime TaskStartTime { get; private set; }
-        public int TaskDuration { get; private set; }
+        public string TaskTitle { get; private set; } = string.Empty;
+        public int TaskPriority { get; private set; }
+        public string TaskTags { get; private set; } = string.Empty;
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public AddTaskDialog()
         {
@@ -30,30 +30,31 @@ namespace KomKom
                 return;
             }
 
-            if (!int.TryParse(DurationTextBox.Text, out int duration) || duration <= 0)
+            if (!(Priority1Radio.IsChecked == true || Priority2Radio.IsChecked == true || Priority3Radio.IsChecked == true || Priority4Radio.IsChecked == true))
             {
-                MessageBox.Show("Please enter a valid duration.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Please choose a priority.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            if (StartDatePicker.SelectedDate == null)
+            if (Priority1Radio.IsChecked == true)
             {
-                MessageBox.Show("Please select a start date.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
+                TaskPriority = 1;
+            }
+            else if (Priority2Radio.IsChecked == true)
+            {
+                TaskPriority = 2;
+            }
+            else if (Priority3Radio.IsChecked == true)
+            {
+                TaskPriority = 3;
+            }
+            else
+            {
+                TaskPriority = 4;
             }
 
-            if (!(HourComboBox.SelectedItem is int hour) || !(MinuteComboBox.SelectedItem is int minute))
-            {
-                MessageBox.Show("Please select a valid start time.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            // Set properties
             TaskTitle = TitleTextBox.Text.Trim();
-            TaskStartTime = StartDatePicker.SelectedDate.Value.Date
-                .AddHours(hour)
-                .AddMinutes(minute);
-            TaskDuration = duration;
+            TaskTags = TagsTextBox.Text.Trim();
 
             DialogResult = true;
             Close();
