@@ -10,20 +10,26 @@ namespace KomKom.Repository
 {
     public class TaskRepository
     {
-        private readonly Data.ApplicationDbContext _context;
+        private readonly string _dbPath;
 
-        public TaskRepository(Data.ApplicationDbContext context)
+        public TaskRepository(string dbPath)
         {
-            _context = context;
+            _dbPath = dbPath;
+        }
+
+        private Data.ApplicationDbContext CreateContext()
+        {
+            return new Data.ApplicationDbContext(_dbPath);
         }
 
         public async Task<List<Models.ScheduledTask>> GetAllTasksAsync()
         {
-            return await _context.Tasks
+            using var context = CreateContext();
+            return await context.Tasks
+                .AsNoTracking()
                 .OrderBy(t => t.Completed)
                 .ThenByDescending(t => t.DurationMinutes)
                 .ThenBy(t => t.Title)
-                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -34,23 +40,26 @@ namespace KomKom.Repository
 
         public async Task AddTaskAsync(ScheduledTask task)
         {
-            _context.Tasks.Add(task);
-            await _context.SaveChangesAsync();
+            using var context = CreateContext();
+            context.Tasks.Add(task);
+            await context.SaveChangesAsync();
         }
 
         public async Task UpdateTaskAsync(ScheduledTask task)
         {
-            _context.Tasks.Update(task);
-            await _context.SaveChangesAsync();
+            using var context = CreateContext();
+            context.Tasks.Update(task);
+            await context.SaveChangesAsync();
         }
 
         public async Task DeleteTaskAsync(int taskId)
         {
-            var task = await _context.Tasks.FindAsync(taskId);
+            using var context = CreateContext();
+            var task = await context.Tasks.FindAsync(taskId);
             if (task != null)
             {
-                _context.Tasks.Remove(task);
-                await _context.SaveChangesAsync();
+                context.Tasks.Remove(task);
+                await context.SaveChangesAsync();
             }
         }
 

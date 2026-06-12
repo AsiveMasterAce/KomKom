@@ -46,7 +46,7 @@ namespace KomKom
             context.Database.EnsureCreated();
 
             // Initialize repository, services, and ViewModel
-            _repo = new TaskRepository(new ApplicationDbContext(dbPath));
+            _repo = new TaskRepository(dbPath);
             _timer = new TimerService();
             ViewModel = new MainViewModel(_repo, _timer);
 

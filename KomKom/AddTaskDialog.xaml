@@ -118,7 +118,7 @@
 
             <!-- Header -->
             <StackPanel Grid.Row="0" Margin="0,0,0,24">
-                <TextBlock Text="📝 Create New Task" FontSize="22" FontWeight="Bold" Foreground="#1F2937"/>
+                <TextBlock Text="Create New Task" FontSize="22" FontWeight="Bold" Foreground="#1F2937"/>
                 <TextBlock Text="Fill in the details for your task" FontSize="13" Foreground="#6B7280" Margin="0,4,0,0"/>
             </StackPanel>
 

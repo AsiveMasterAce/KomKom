@@ -54,6 +54,33 @@
             </Style.Triggers>
         </Style>
 
+        <Style x:Key="TaskAmberButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+            <Setter Property="Background" Value="#F59E0B"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="MinWidth" Value="40"/>
+            <Setter Property="Height" Value="30"/>
+        </Style>
+
+        <Style x:Key="TaskRedButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+            <Setter Property="Background" Value="#EF4444"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="MinWidth" Value="40"/>
+            <Setter Property="Height" Value="30"/>
+        </Style>
+
+        <Style x:Key="TaskGreenButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+            <Setter Property="Background" Value="#10B981"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="MinWidth" Value="52"/>
+            <Setter Property="Height" Value="30"/>
+        </Style>
+
         <!-- Small Button Style -->
         <Style x:Key="SmallButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
             <Setter Property="Padding" Value="12,8"/>
@@ -104,9 +131,10 @@
         <!-- Task Item Style -->
         <Style x:Key="TaskItemStyle" TargetType="ListBoxItem">
             <Setter Property="Background" Value="White"/>
-            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
             <Setter Property="Padding" Value="0"/>
             <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ListBoxItem">
@@ -114,6 +142,7 @@
                                 Background="{TemplateBinding Background}"
                                 CornerRadius="14"
                                 Padding="16,14"
+                                MinHeight="128"
                                 Margin="{TemplateBinding Margin}">
                             <Border.Effect>
                                 <DropShadowEffect Color="#0F172A" Opacity="0.06" BlurRadius="12" ShadowDepth="2"/>
@@ -162,7 +191,7 @@
 
                 <!-- Header -->
                 <StackPanel Grid.Row="0" Margin="0,0,0,20">
-                    <TextBlock Text="📋 My Tasks" 
+                    <TextBlock Text="My Tasks" 
                                FontSize="24" 
                                FontWeight="Bold" 
                                Foreground="#1F2937"/>
@@ -182,29 +211,50 @@
                              ItemContainerStyle="{StaticResource TaskItemStyle}">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <Grid>
+                                <Grid VerticalAlignment="Stretch">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
 
-                                    <!-- Priority Badge -->
-                                    <Border Grid.Column="0" 
-                                            Background="#E0E7FF" 
-                                            CornerRadius="999" 
-                                            Padding="10,6"
-                                            VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding DurationMinutes, StringFormat=P{0}}" 
-                                                   FontSize="12" 
-                                                   FontWeight="SemiBold"
-                                                   Foreground="#4338CA"/>
+                                    <!-- Task Status -->
+                                    <Border Grid.Column="0"
+                                            Grid.Row="0"
+                                            Grid.RowSpan="2"
+                                            Width="34"
+                                            Height="34"
+                                            Background="#EEF2FF"
+                                            CornerRadius="17"
+                                            VerticalAlignment="Top"
+                                            Margin="0,2,12,0">
+                                        <TextBlock Text="•"
+                                                   FontSize="18"
+                                                   FontWeight="Bold"
+                                                   Foreground="#4F46E5"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Completed}" Value="True">
+                                                            <Setter Property="Text" Value="✓"/>
+                                                            <Setter Property="Foreground" Value="#10B981"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
                                     </Border>
 
                                     <!-- Task Info -->
-                                    <StackPanel Grid.Column="1" 
-                                                Margin="12,0,12,0" 
-                                                VerticalAlignment="Center">
+                    <StackPanel Grid.Column="1"
+                        Grid.Row="0"
+                        VerticalAlignment="Top">
                                         <TextBlock Text="{Binding Title}"
                                                    FontSize="15"
                                                    FontWeight="SemiBold"
@@ -220,62 +270,60 @@
                                                 </Style>
                                             </TextBlock.Style>
                                         </TextBlock>
-                                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
-                                            <Border Background="#FEF3C7" CornerRadius="999" Padding="8,4" Margin="0,0,8,0">
-                                                <TextBlock Text="{Binding Category}"
-                                                           FontSize="12"
-                                                           FontWeight="SemiBold"
-                                                           Foreground="#B45309"/>
-                                            </Border>
-                                            <Border Background="#F1F5F9" CornerRadius="999" Padding="8,4">
-                                                <TextBlock Text="Done"
-                                                           FontSize="12"
-                                                           FontWeight="SemiBold"
-                                                           Foreground="#64748B">
-                                                    <TextBlock.Style>
-                                                        <Style TargetType="TextBlock">
-                                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                                            <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding Completed}" Value="True">
-                                                                    <Setter Property="Visibility" Value="Visible"/>
-                                                                </DataTrigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </TextBlock.Style>
-                                                </TextBlock>
-                                            </Border>
-                                        </StackPanel>
+                                        <TextBlock Text="{Binding Category}"
+                                                   FontSize="12"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#B45309"
+                                                   Margin="0,5,0,0"/>
+                                    </StackPanel>
+
+                                    <!-- Details -->
+                                    <StackPanel Grid.Column="1"
+                                                Grid.Row="1"
+                                                Margin="0,8,0,0">
+                                        <TextBlock Text="{Binding DurationMinutes, StringFormat={}{0} min}"
+                                                   FontSize="12"
+                                                   Foreground="#475569"/>
+                                        <TextBlock Text="{Binding StartTime, StringFormat={}{0:MMM d, h:mm tt}}"
+                                                   FontSize="12"
+                                                   Foreground="#64748B"
+                                                   Margin="0,4,0,0"/>
+                                        <TextBlock Text="Details shown below the title so the card stays compact."
+                                                   FontSize="11"
+                                                   Foreground="#94A3B8"
+                                                   Margin="0,4,0,0"
+                                                   TextWrapping="Wrap"/>
                                     </StackPanel>
 
                                     <!-- Actions -->
-                                    <StackPanel Grid.Column="2"
+                                    <StackPanel Grid.Column="1"
+                                                Grid.Row="2"
                                                 Orientation="Horizontal"
-                                            VerticalAlignment="Center">
+                                                HorizontalAlignment="Left"
+                                                Margin="0,10,0,0">
                                         <Button Content="↑"
                                                 Command="{Binding DataContext.IncreasePriorityCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                 CommandParameter="{Binding}"
-                                                Style="{StaticResource SecondaryButton}"
-                                                Width="36"
-                                                Height="36"
-                                                FontSize="14"
+                                                Style="{StaticResource TaskAmberButton}"
+                                                Width="40"
+                                                Height="30"
+                                                FontSize="12"
                                                 Margin="0,0,6,0"/>
                                         <Button Content="↓"
                                                 Command="{Binding DataContext.DecreasePriorityCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                 CommandParameter="{Binding}"
-                                                Style="{StaticResource SecondaryButton}"
-                                                Width="36"
-                                                Height="36"
-                                                FontSize="14"
+                                                Style="{StaticResource TaskRedButton}"
+                                                Width="40"
+                                                Height="30"
+                                                FontSize="12"
                                                 Margin="0,0,6,0"/>
-                                        <Button Content="✓"
+                                        <Button Content="Done"
                                                 Command="{Binding DataContext.ToggleTaskCompletedCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                 CommandParameter="{Binding}"
-                                                Style="{StaticResource ModernButton}"
-                                                Width="36"
-                                                Height="36"
-                                                FontSize="14"
-                                                Padding="0"
-                                                Background="#10B981"
+                                                Style="{StaticResource TaskGreenButton}"
+                                                Width="56"
+                                                Height="30"
+                                                FontSize="11"
                                                 Margin="0"/>
                                     </StackPanel>
                                 </Grid>
@@ -286,7 +334,7 @@
 
                 <!-- Add Task Button -->
                 <Button Grid.Row="2" 
-                        Content="+ Add Task" 
+                        Content="Add Task" 
                         Command="{Binding AddTaskCommand}"
                         Style="{StaticResource ModernButton}"
                         Margin="0,16,0,0"
@@ -314,7 +362,7 @@
 
                 <!-- Timer Header -->
                 <StackPanel Grid.Row="0">
-                    <TextBlock Text="⏰ Pomodoro Timer" 
+                    <TextBlock Text="Pomodoro Timer" 
                                FontSize="26" 
                                FontWeight="Bold" 
                                Foreground="#1F2937"
@@ -455,21 +503,21 @@
                 <StackPanel Grid.Row="3" 
                             Orientation="Horizontal" 
                             HorizontalAlignment="Center">
-                        <Button Content="Start time" 
+                        <Button Content="Start Timer" 
                             Command="{Binding StartTimerCommand}"
                             Style="{StaticResource ModernButton}"
                             Width="160"
                             Height="50"
                             FontSize="15"
                             Margin="0,0,12,0"/>
-                    <Button Content="⏸ Pause" 
+                    <Button Content="Pause" 
                             Command="{Binding PauseTimerCommand}"
                             Style="{StaticResource SecondaryButton}"
                             Width="120"
                             Height="50"
                         FontSize="15"
                         Margin="0,0,12,0"/>
-                    <Button Content="↺ Reset" 
+                    <Button Content="Reset" 
                         Command="{Binding ResetTimerCommand}"
                         Style="{StaticResource SecondaryButton}"
                         Width="120"
