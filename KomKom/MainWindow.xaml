@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
         mc:Ignorable="d"
         Title="KomKom - Task Manager" Height="600" Width="950"
         Background="#F5F7FA"
@@ -203,7 +204,7 @@
 
     <Grid Margin="24">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="420" />
+            <ColumnDefinition Width="470" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
@@ -394,7 +395,24 @@
                                                 Width="56"
                                                 Height="30"
                                                 FontSize="11"
-                                                Margin="0"/>
+                                            Margin="0,0,6,0"/>
+                                        <Button Command="{Binding DataContext.DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource TaskRedButton}"
+                                                Width="78"
+                                                Height="30"
+                                                FontSize="11"
+                                                Margin="0">
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                <svgc:SvgViewbox Source="/icons/app/trash.svg"
+                                                                 Width="12"
+                                                                 Height="12"
+                                                                 Margin="0,0,6,0"/>
+                                                <TextBlock Text="Delete"
+                                                           Foreground="White"
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
                                     </WrapPanel>
                                 </Grid>
                             </DataTemplate>

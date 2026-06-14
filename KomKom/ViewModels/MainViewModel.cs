@@ -381,6 +381,7 @@ namespace KomKom.ViewModels
         public ICommand DecreasePriorityCommand => new RelayCommand(async task => await ChangePriorityAsync(task as ScheduledTask, -1));
         public ICommand ToggleTaskImportantCommand => new RelayCommand(async task => await ToggleTaskImportantAsync(task as ScheduledTask));
         public ICommand ToggleTaskCompletedCommand => new RelayCommand(async task => await ToggleTaskCompletedAsync(task as ScheduledTask));
+        public ICommand DeleteTaskCommand => new RelayCommand(async task => await DeleteTaskAsync(task as ScheduledTask));
 
         private async Task ChangePriorityAsync(ScheduledTask? task, int delta)
         {
@@ -399,6 +400,15 @@ namespace KomKom.ViewModels
 
             task.Completed = !task.Completed;
             await _repo.UpdateTaskAsync(task);
+            await RefreshTasks();
+        }
+
+        private async Task DeleteTaskAsync(ScheduledTask? task)
+        {
+            if (task == null)
+                return;
+
+            await _repo.DeleteTaskAsync(task.Id);
             await RefreshTasks();
         }
 
