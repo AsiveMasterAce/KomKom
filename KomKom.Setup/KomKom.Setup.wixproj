@@ -1,0 +1,25 @@
+<Project Sdk="WixToolset.Sdk/7.0.0" InitialTargets="PublishApp">
+  <PropertyGroup>
+    <OutputType>Package</OutputType>
+    <Platform>x64</Platform>
+    <Configuration>Release</Configuration>
+    <OutputName>KomKom</OutputName>
+    <AcceptEula>wix7</AcceptEula>
+    <PublishDir>$(MSBuildProjectDirectory)\publish\</PublishDir>
+    <KomKomIcon>$(MSBuildThisFileDirectory)..\KomKom\icons\icon.ico</KomKomIcon>
+    <DefineConstants>PublishDir=$(PublishDir)</DefineConstants>
+    <DefineConstants>$(DefineConstants);KomKomIcon=$(KomKomIcon)</DefineConstants>
+    <AppProject>$(MSBuildThisFileDirectory)..\KomKom\KomKom.csproj</AppProject>
+    <AppPublishCommand>dotnet publish &quot;$(AppProject)&quot; -c $(Configuration) -r win-x64 --self-contained true -o &quot;$(PublishDir)&quot;</AppPublishCommand>
+  </PropertyGroup>
+
+  <Target Name="PublishApp">
+    <RemoveDir Directories="$(PublishDir)" Condition="Exists('$(PublishDir)')" />
+    <MakeDir Directories="$(PublishDir)" />
+    <Exec Command="$(AppPublishCommand)" />
+  </Target>
+
+  <ItemGroup>
+    <None Include="Product.wxs" />
+  </ItemGroup>
+</Project>

@@ -5,10 +5,12 @@ using KomKom.Services;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Media;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace KomKom.ViewModels
 {
@@ -24,6 +26,8 @@ namespace KomKom.ViewModels
         private readonly TaskRepository _repo;
         private readonly TimerService _timer;
         private readonly NotificationService _notification = new NotificationService();
+        private readonly MediaPlayer _ringPlayer = new MediaPlayer();
+        private double _timerSoundVolume = 1.0;
 
         public ObservableCollection<int> TimerOptions { get; } = new ObservableCollection<int>
         {
@@ -32,6 +36,7 @@ namespace KomKom.ViewModels
 
         private TimeSpan _timerDisplay = TimeSpan.Zero;
         private TimeSpan _selectedDuration = TimeSpan.Zero;
+        private TimeSpan _activeTimerDuration = TimeSpan.Zero;
         private int? _selectedTimerMinutes;
         private bool _isRunning;
 
@@ -46,6 +51,9 @@ namespace KomKom.ViewModels
                 _isRunning = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsTimerSelectionEnabled));
+                OnPropertyChanged(nameof(HasPausedTimerSession));
+                OnPropertyChanged(nameof(TimerPrimaryActionText));
+                OnPropertyChanged(nameof(TimerStatusText));
                 RefreshTimerCommandStates();
             }
         }
@@ -62,6 +70,11 @@ namespace KomKom.ViewModels
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(TimerDisplayString));
                 OnPropertyChanged(nameof(TimerDisplaySafeString));
+                OnPropertyChanged(nameof(TimerProgress));
+                OnPropertyChanged(nameof(TimerProgressGeometry));
+                OnPropertyChanged(nameof(HasPausedTimerSession));
+                OnPropertyChanged(nameof(TimerStatusText));
+                OnPropertyChanged(nameof(TimerPrimaryActionText));
                 RefreshTimerCommandStates();
             }
         }
@@ -80,6 +93,7 @@ namespace KomKom.ViewModels
                 OnPropertyChanged(nameof(HasSelectedTimer));
                 OnPropertyChanged(nameof(SelectedTimerPreviewText));
                 OnPropertyChanged(nameof(SelectedTimerLabel));
+                OnPropertyChanged(nameof(TimerPrimaryActionText));
                 RefreshTimerCommandStates();
             }
         }
@@ -101,6 +115,8 @@ namespace KomKom.ViewModels
                 OnPropertyChanged(nameof(HasSelectedTimer));
                 OnPropertyChanged(nameof(SelectedTimerPreviewText));
                 OnPropertyChanged(nameof(SelectedTimerLabel));
+                OnPropertyChanged(nameof(TimerPrimaryActionText));
+                OnPropertyChanged(nameof(TimerStatusText));
 
                 if (value.HasValue)
                 {
@@ -119,6 +135,54 @@ namespace KomKom.ViewModels
 
         public string SelectedTimerLabel => HasSelectedTimer ? "Start time" : "Select a time";
 
+        public bool HasActiveTimerSession => _activeTimerDuration > TimeSpan.Zero;
+
+        public bool HasPausedTimerSession => HasActiveTimerSession && !IsTimerRunning && TimerDisplay > TimeSpan.Zero;
+
+        public string TimerStatusText => IsTimerRunning ? "Running" : HasPausedTimerSession ? "Paused" : "Ready";
+
+        public string TimerPrimaryActionText => IsTimerRunning ? "Pause" : HasActiveTimerSession ? "Resume" : "Start";
+
+        public Brush TimerAccentBrush => new SolidColorBrush(Color.FromRgb(79, 70, 229));
+
+        public Brush TimerTrackBrush => new SolidColorBrush(Color.FromRgb(229, 231, 235));
+
+        public Brush TimerSurfaceBrush => new SolidColorBrush(Color.FromRgb(249, 250, 251));
+
+        public Brush TimerStatusBrush => new SolidColorBrush(Color.FromRgb(107, 114, 128));
+
+        public double TimerProgress
+        {
+            get
+            {
+                if (_activeTimerDuration <= TimeSpan.Zero)
+                    return 0;
+
+                var elapsed = _activeTimerDuration - TimerDisplay;
+                var progress = elapsed.TotalSeconds / _activeTimerDuration.TotalSeconds;
+                return Math.Max(0, Math.Min(1, progress));
+            }
+        }
+
+        public Geometry TimerProgressGeometry => CreateTimerProgressGeometry(TimerProgress);
+
+        public double TimerSoundVolume
+        {
+            get => _timerSoundVolume;
+            set
+            {
+                var safeValue = Math.Max(0, Math.Min(1, value));
+                if (Math.Abs(_timerSoundVolume - safeValue) < 0.0001)
+                    return;
+
+                _timerSoundVolume = safeValue;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(TimerSoundVolumePercent));
+            }
+        }
+
+        public string TimerSoundVolumePercent => $"{(int)Math.Round(TimerSoundVolume * 100)}%";
+
         public string SelectedTimerPreviewText
         {
             get
@@ -136,15 +200,17 @@ namespace KomKom.ViewModels
             }
         }
 
-        public bool IsTimerSelectionEnabled => !_isRunning;
+        public bool IsTimerSelectionEnabled => !_isRunning && !HasActiveTimerSession;
 
         private readonly RelayCommand _startTimerCommand;
         private readonly RelayCommand _pauseTimerCommand;
         private readonly RelayCommand _resetTimerCommand;
+        private readonly RelayCommand _primaryTimerCommand;
 
         public ICommand StartTimerCommand => _startTimerCommand;
         public ICommand PauseTimerCommand => _pauseTimerCommand;
         public ICommand ResetTimerCommand => _resetTimerCommand;
+        public ICommand TimerPrimaryActionCommand => _primaryTimerCommand;
         public ICommand IncreaseTimeCommand { get; }
         public ICommand DecreaseTimeCommand { get; }
         public ICommand AddTaskCommand { get; }
@@ -160,6 +226,7 @@ namespace KomKom.ViewModels
             _startTimerCommand = new RelayCommand(_ => StartTimer(), _ => !IsTimerRunning && HasSelectedTimer);
             _pauseTimerCommand = new RelayCommand(_ => PauseTimer(), _ => IsTimerRunning);
             _resetTimerCommand = new RelayCommand(_ => ResetTimer(), _ => IsTimerRunning || TimerDisplay > TimeSpan.Zero || HasSelectedTimer);
+            _primaryTimerCommand = new RelayCommand(_ => ExecutePrimaryTimerAction(), _ => CanExecutePrimaryTimerAction());
             IncreaseTimeCommand = new RelayCommand(_ => AdjustSelection(TimeSpan.FromSeconds(30)));
             DecreaseTimeCommand = new RelayCommand(_ => AdjustSelection(TimeSpan.FromSeconds(-30)));
             AddTaskCommand = new RelayCommand(_ => ShowAddTaskDialog());
@@ -170,14 +237,52 @@ namespace KomKom.ViewModels
         private void OnTimerTick(TimeSpan remaining)
         {
             TimerDisplay = remaining;
+            OnPropertyChanged(nameof(TimerAccentBrush));
+            OnPropertyChanged(nameof(TimerTrackBrush));
+            OnPropertyChanged(nameof(TimerSurfaceBrush));
+            OnPropertyChanged(nameof(TimerStatusBrush));
         }
 
         private void OnTimerFinished()
         {
             IsTimerRunning = false;
+            _activeTimerDuration = TimeSpan.Zero;
             TimerDisplay = TimeSpan.Zero;
-            SystemSounds.Exclamation.Play();
+            PlayTimerRing();
             _notification.ShowToast("Timer", "Time's up!");
+            OnPropertyChanged(nameof(IsTimerSelectionEnabled));
+            OnPropertyChanged(nameof(TimerPrimaryActionText));
+            OnPropertyChanged(nameof(TimerStatusText));
+            OnPropertyChanged(nameof(TimerProgress));
+            OnPropertyChanged(nameof(TimerProgressGeometry));
+            OnPropertyChanged(nameof(TimerAccentBrush));
+            OnPropertyChanged(nameof(TimerTrackBrush));
+            OnPropertyChanged(nameof(TimerSurfaceBrush));
+            OnPropertyChanged(nameof(TimerStatusBrush));
+            OnPropertyChanged(nameof(HasPausedTimerSession));
+        }
+
+        private void PlayTimerRing()
+        {
+            var ringPath = Path.Combine(AppContext.BaseDirectory, "Sounds", "ring Kom.mp3");
+
+            if (!File.Exists(ringPath))
+            {
+                SystemSounds.Exclamation.Play();
+                return;
+            }
+
+            try
+            {
+                _ringPlayer.Stop();
+                _ringPlayer.Open(new Uri(ringPath, UriKind.Absolute));
+                _ringPlayer.Volume = TimerSoundVolume;
+                _ringPlayer.Play();
+            }
+            catch
+            {
+                SystemSounds.Exclamation.Play();
+            }
         }
 
         private void OpenTaskDialog()
@@ -192,6 +297,7 @@ namespace KomKom.ViewModels
             if (!HasSelectedTimer)
                 return;
 
+            _activeTimerDuration = SelectedDuration;
             TimerDisplay = SelectedDuration;
             IsTimerRunning = true;
             _timer.Start(TimerDisplay);
@@ -203,13 +309,28 @@ namespace KomKom.ViewModels
             _timer.Pause();
         }
 
+        private void ResumeTimer()
+        {
+            if (!HasActiveTimerSession || TimerDisplay <= TimeSpan.Zero)
+                return;
+
+            IsTimerRunning = true;
+            _timer.Resume();
+        }
+
         private void ResetTimer()
         {
             IsTimerRunning = false;
+            _activeTimerDuration = TimeSpan.Zero;
             TimerDisplay = TimeSpan.Zero;
             SelectedDuration = TimeSpan.Zero;
             SelectedTimerMinutes = null;
             _timer.Reset(TimeSpan.Zero);
+            OnPropertyChanged(nameof(TimerProgress));
+            OnPropertyChanged(nameof(TimerProgressGeometry));
+            OnPropertyChanged(nameof(TimerStatusText));
+            OnPropertyChanged(nameof(TimerPrimaryActionText));
+            OnPropertyChanged(nameof(HasPausedTimerSession));
         }
 
         private void AdjustSelection(TimeSpan delta)
@@ -258,9 +379,10 @@ namespace KomKom.ViewModels
 
         public ICommand IncreasePriorityCommand => new RelayCommand(async task => await ChangePriorityAsync(task as ScheduledTask, 1));
         public ICommand DecreasePriorityCommand => new RelayCommand(async task => await ChangePriorityAsync(task as ScheduledTask, -1));
+        public ICommand ToggleTaskImportantCommand => new RelayCommand(async task => await ToggleTaskImportantAsync(task as ScheduledTask));
         public ICommand ToggleTaskCompletedCommand => new RelayCommand(async task => await ToggleTaskCompletedAsync(task as ScheduledTask));
 
-        private async Task ChangePriorityAsync(ScheduledTask task, int delta)
+        private async Task ChangePriorityAsync(ScheduledTask? task, int delta)
         {
             if (task == null)
                 return;
@@ -270,7 +392,7 @@ namespace KomKom.ViewModels
             await RefreshTasks();
         }
 
-        private async Task ToggleTaskCompletedAsync(ScheduledTask task)
+        private async Task ToggleTaskCompletedAsync(ScheduledTask? task)
         {
             if (task == null)
                 return;
@@ -280,11 +402,112 @@ namespace KomKom.ViewModels
             await RefreshTasks();
         }
 
+        private async Task ToggleTaskImportantAsync(ScheduledTask? task)
+        {
+            if (task == null)
+                return;
+
+            task.Category = UpdateImportantTag(task.Category, !task.IsImportant);
+            await _repo.UpdateTaskAsync(task);
+            await RefreshTasks();
+        }
+
+        private static string UpdateImportantTag(string? category, bool isImportant)
+        {
+            var tags = string.IsNullOrWhiteSpace(category)
+                ? new List<string>()
+                : category.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+
+            tags.RemoveAll(tag => string.Equals(tag, "Normal", StringComparison.OrdinalIgnoreCase));
+            tags.RemoveAll(tag => string.Equals(tag, "important", StringComparison.OrdinalIgnoreCase));
+
+            if (isImportant)
+            {
+                tags.Insert(0, "important");
+            }
+
+            if (tags.Count == 0)
+                return isImportant ? "important" : "Normal";
+
+            return string.Join(", ", tags);
+        }
+
+        private void ExecutePrimaryTimerAction()
+        {
+            if (IsTimerRunning)
+            {
+                PauseTimer();
+                return;
+            }
+
+            if (HasActiveTimerSession && TimerDisplay > TimeSpan.Zero)
+            {
+                ResumeTimer();
+                return;
+            }
+
+            StartTimer();
+        }
+
+        private bool CanExecutePrimaryTimerAction()
+        {
+            return HasSelectedTimer || HasActiveTimerSession;
+        }
+
+        private static Geometry CreateTimerProgressGeometry(double progress)
+        {
+            progress = Math.Max(0, Math.Min(1, progress));
+
+            if (progress <= 0)
+                return Geometry.Empty;
+
+            if (progress >= 1)
+                progress = 0.9999;
+
+            const double center = 50;
+            const double radius = 40;
+            var startAngle = -90.0;
+            var endAngle = startAngle + 360.0 * progress;
+
+            var startPoint = PointOnCircle(center, center, radius, startAngle);
+            var endPoint = PointOnCircle(center, center, radius, endAngle);
+            var isLargeArc = endAngle - startAngle > 180;
+
+            var geometry = new StreamGeometry();
+            using (var context = geometry.Open())
+            {
+                context.BeginFigure(startPoint, false, false);
+                context.ArcTo(endPoint, new System.Windows.Size(radius, radius), 0, isLargeArc, SweepDirection.Clockwise, true, false);
+            }
+
+            geometry.Freeze();
+            return geometry;
+        }
+
+        private static System.Windows.Point PointOnCircle(double centerX, double centerY, double radius, double angleDegrees)
+        {
+            var angleRadians = angleDegrees * Math.PI / 180.0;
+            return new System.Windows.Point(
+                centerX + radius * Math.Cos(angleRadians),
+                centerY + radius * Math.Sin(angleRadians));
+        }
+
         private void RefreshTimerCommandStates()
         {
             _startTimerCommand.RaiseCanExecuteChanged();
             _pauseTimerCommand.RaiseCanExecuteChanged();
             _resetTimerCommand.RaiseCanExecuteChanged();
+            _primaryTimerCommand.RaiseCanExecuteChanged();
+            OnPropertyChanged(nameof(TimerPrimaryActionText));
+            OnPropertyChanged(nameof(TimerStatusText));
+            OnPropertyChanged(nameof(TimerProgress));
+            OnPropertyChanged(nameof(TimerProgressGeometry));
+            OnPropertyChanged(nameof(TimerAccentBrush));
+            OnPropertyChanged(nameof(TimerTrackBrush));
+            OnPropertyChanged(nameof(TimerSurfaceBrush));
+            OnPropertyChanged(nameof(TimerStatusBrush));
+            OnPropertyChanged(nameof(HasPausedTimerSession));
+            OnPropertyChanged(nameof(HasActiveTimerSession));
         }
     }
 }

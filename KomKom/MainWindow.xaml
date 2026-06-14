@@ -3,10 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:KomKom"
         mc:Ignorable="d"
         Title="KomKom - Task Manager" Height="600" Width="950"
         Background="#F5F7FA"
+    Icon="icons/icon.ico"
         WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
@@ -81,6 +81,32 @@
             <Setter Property="Height" Value="30"/>
         </Style>
 
+        <Style x:Key="TaskImportantButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+            <Setter Property="Background" Value="#F59E0B"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="MinWidth" Value="78"/>
+            <Setter Property="Height" Value="30"/>
+        </Style>
+
+        <Style x:Key="TimerPrimaryActionButton" TargetType="Button" BasedOn="{StaticResource ModernButton}">
+            <Setter Property="MinWidth" Value="200"/>
+            <Setter Property="Height" Value="56"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Padding" Value="24,12"/>
+            <Setter Property="Background" Value="#4F46E5"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Style.Triggers>
+                <Trigger Property="Content" Value="Pause">
+                    <Setter Property="Background" Value="#EF4444"/>
+                </Trigger>
+                <Trigger Property="Content" Value="Resume">
+                    <Setter Property="Background" Value="#10B981"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
         <!-- Small Button Style -->
         <Style x:Key="SmallButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
             <Setter Property="Padding" Value="12,8"/>
@@ -131,15 +157,18 @@
         <!-- Task Item Style -->
         <Style x:Key="TaskItemStyle" TargetType="ListBoxItem">
             <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E5E7EB"/>
+            <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Margin" Value="0,0,0,10"/>
             <Setter Property="Padding" Value="0"/>
-            <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ListBoxItem">
                         <Border x:Name="TaskCard"
                                 Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="14"
                                 Padding="16,14"
                                 MinHeight="128"
@@ -150,6 +179,11 @@
                             <ContentPresenter/>
                         </Border>
                         <ControlTemplate.Triggers>
+                            <DataTrigger Binding="{Binding IsImportant}" Value="True">
+                                <Setter TargetName="TaskCard" Property="Background" Value="#FFF7ED"/>
+                                <Setter TargetName="TaskCard" Property="BorderBrush" Value="#F59E0B"/>
+                                <Setter TargetName="TaskCard" Property="BorderThickness" Value="1.5"/>
+                            </DataTrigger>
                             <DataTrigger Binding="{Binding Completed}" Value="True">
                                 <Setter TargetName="TaskCard" Property="Background" Value="#F8FAFC"/>
                                 <Setter TargetName="TaskCard" Property="Opacity" Value="0.72"/>
@@ -169,7 +203,7 @@
 
     <Grid Margin="24">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="380" />
+            <ColumnDefinition Width="420" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
@@ -177,7 +211,7 @@
         <Border Grid.Column="0" 
                 Background="White" 
                 CornerRadius="16" 
-                Padding="20">
+            Padding="16">
             <Border.Effect>
                 <DropShadowEffect Color="#000000" Opacity="0.08" BlurRadius="20" ShadowDepth="4"/>
             </Border.Effect>
@@ -241,6 +275,10 @@
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
                                                     <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsImportant}" Value="True">
+                                                            <Setter Property="Text" Value="★"/>
+                                                            <Setter Property="Foreground" Value="#F59E0B"/>
+                                                        </DataTrigger>
                                                         <DataTrigger Binding="{Binding Completed}" Value="True">
                                                             <Setter Property="Text" Value="✓"/>
                                                             <Setter Property="Foreground" Value="#10B981"/>
@@ -252,30 +290,55 @@
                                     </Border>
 
                                     <!-- Task Info -->
-                    <StackPanel Grid.Column="1"
-                        Grid.Row="0"
-                        VerticalAlignment="Top">
-                                        <TextBlock Text="{Binding Title}"
-                                                   FontSize="15"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="#0F172A">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding Completed}" Value="True">
-                                                            <Setter Property="Foreground" Value="#94A3B8"/>
-                                                            <Setter Property="TextDecorations" Value="Strikethrough"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
-                                        </TextBlock>
-                                        <TextBlock Text="{Binding Category}"
-                                                   FontSize="12"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="#B45309"
-                                                   Margin="0,5,0,0"/>
-                                    </StackPanel>
+                                    <Grid Grid.Column="1"
+                                          Grid.Row="0"
+                                          VerticalAlignment="Top">
+                                        <Grid.ColumnDefinitions>
+                                                                                        <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="{Binding Title}"
+                                                       FontSize="15"
+                                                       FontWeight="SemiBold"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       TextWrapping="NoWrap">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Foreground" Value="#0F172A"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsImportant}" Value="True">
+                                                                <Setter Property="Foreground" Value="#9A3412"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Completed}" Value="True">
+                                                                <Setter Property="Foreground" Value="#94A3B8"/>
+                                                                <Setter Property="TextDecorations" Value="Strikethrough"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                            <TextBlock Text="{Binding Category}"
+                                                       FontSize="12"
+                                                       FontWeight="SemiBold"
+                                                       Margin="0,5,0,0"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       TextWrapping="NoWrap">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Foreground" Value="#64748B"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsImportant}" Value="True">
+                                                                <Setter Property="Foreground" Value="#B45309"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Completed}" Value="True">
+                                                                <Setter Property="Foreground" Value="#94A3B8"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Grid>
 
                                     <!-- Details -->
                                     <StackPanel Grid.Column="1"
@@ -296,11 +359,10 @@
                                     </StackPanel>
 
                                     <!-- Actions -->
-                                    <StackPanel Grid.Column="1"
-                                                Grid.Row="2"
-                                                Orientation="Horizontal"
-                                                HorizontalAlignment="Left"
-                                                Margin="0,10,0,0">
+                                        <WrapPanel Grid.Column="1"
+                                               Grid.Row="2"
+                                               HorizontalAlignment="Left"
+                                               Margin="0,10,0,0">
                                         <Button Content="↑"
                                                 Command="{Binding DataContext.IncreasePriorityCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                 CommandParameter="{Binding}"
@@ -317,6 +379,14 @@
                                                 Height="30"
                                                 FontSize="12"
                                                 Margin="0,0,6,0"/>
+                                        <Button Content="Important"
+                                            Command="{Binding DataContext.ToggleTaskImportantCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}"
+                                            Style="{StaticResource TaskImportantButton}"
+                                            Width="86"
+                                            Height="30"
+                                            FontSize="11"
+                                            Margin="0,0,6,0"/>
                                         <Button Content="Done"
                                                 Command="{Binding DataContext.ToggleTaskCompletedCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                 CommandParameter="{Binding}"
@@ -325,7 +395,7 @@
                                                 Height="30"
                                                 FontSize="11"
                                                 Margin="0"/>
-                                    </StackPanel>
+                                    </WrapPanel>
                                 </Grid>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
@@ -388,57 +458,41 @@
                             Margin="0,20,0,20">
                     <Viewbox VerticalAlignment="Center"
                              HorizontalAlignment="Center">
-                        <Border x:Name="TimerCard"
-                                Background="#F9FAFB" 
-                                CornerRadius="30" 
-                                Padding="48,30"
-                                BorderBrush="#E5E7EB"
-                                BorderThickness="2"
-                                RenderTransformOrigin="0.5,0.5">
-                            <Border.RenderTransform>
-                                <ScaleTransform ScaleX="1" ScaleY="1"/>
-                            </Border.RenderTransform>
-                            <Border.Style>
-                                <Style TargetType="Border">
-                                    <Setter Property="BorderBrush" Value="#E5E7EB"/>
-                                    <Setter Property="BorderThickness" Value="2"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsTimerRunning}" Value="True">
-                                            <DataTrigger.EnterActions>
-                                                <BeginStoryboard x:Name="TimerPulseStoryboard">
-                                                    <Storyboard RepeatBehavior="Forever" AutoReverse="True">
-                                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
-                                                                         To="1.03"
-                                                                         Duration="0:0:0.8"/>
-                                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
-                                                                         To="1.03"
-                                                                         Duration="0:0:0.8"/>
-                                                    </Storyboard>
-                                                </BeginStoryboard>
-                                            </DataTrigger.EnterActions>
-                                            <DataTrigger.ExitActions>
-                                                <StopStoryboard BeginStoryboardName="TimerPulseStoryboard"/>
-                                            </DataTrigger.ExitActions>
-                                            <Setter Property="BorderBrush" Value="#4F46E5"/>
-                                            <Setter Property="BorderThickness" Value="3"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Border.Style>
-                            <StackPanel>
-                                <TextBlock Text="{Binding TimerDisplaySafeString}" 
-                                           FontSize="80" 
-                                           FontWeight="Bold" 
-                                           Foreground="#4F46E5"
-                                           HorizontalAlignment="Center"
-                                           FontFamily="Segoe UI, Consolas"/>
-                                <TextBlock Text="minutes remaining" 
-                                           FontSize="16" 
-                                           Foreground="#6B7280"
-                                           HorizontalAlignment="Center"
-                                           Margin="0,8,0,0"/>
-                            </StackPanel>
-                        </Border>
+                        <Grid Width="320" Height="320">
+                            <Ellipse Width="320"
+                                     Height="320"
+                                     Stroke="{Binding TimerTrackBrush}"
+                                     StrokeThickness="14"/>
+                            <Path Data="{Binding TimerProgressGeometry}"
+                                  Stroke="{Binding TimerAccentBrush}"
+                                  StrokeThickness="14"
+                                  StrokeStartLineCap="Round"
+                                  StrokeEndLineCap="Round"
+                                  Fill="Transparent"/>
+                            <Border Width="220"
+                                    Height="220"
+                                    Background="{Binding TimerSurfaceBrush}"
+                                    CornerRadius="110"
+                                    BorderBrush="{Binding TimerTrackBrush}"
+                                    BorderThickness="2"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+                                <StackPanel VerticalAlignment="Center"
+                                            HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding TimerDisplaySafeString}"
+                                               FontSize="72"
+                                               FontWeight="Bold"
+                                               Foreground="{Binding TimerAccentBrush}"
+                                               HorizontalAlignment="Center"
+                                               FontFamily="Segoe UI, Consolas"/>
+                                    <TextBlock Text="{Binding TimerStatusText}"
+                                               FontSize="15"
+                                               Foreground="{Binding TimerStatusBrush}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,8,0,0"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
                     </Viewbox>
                 </StackPanel>
 
@@ -497,32 +551,48 @@
                             </ListBox.ItemTemplate>
                         </ListBox>
                     </StackPanel>
+
+                            <StackPanel Orientation="Vertical"
+                                HorizontalAlignment="Center"
+                                Margin="0,18,0,0">
+                            <TextBlock Text="Timer Sound Volume"
+                                   FontSize="14"
+                                   Foreground="#6B7280"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,10"/>
+                            <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+                                <Slider Width="220"
+                                    Minimum="0"
+                                    Maximum="1"
+                                    Value="{Binding TimerSoundVolume, Mode=TwoWay}"
+                                    TickFrequency="0.1"
+                                    IsSnapToTickEnabled="False"
+                                    Margin="0,0,12,0"/>
+                                <TextBlock Text="{Binding TimerSoundVolumePercent}"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       Foreground="#4F46E5"
+                                       VerticalAlignment="Center"/>
+                            </StackPanel>
+                            </StackPanel>
                 </StackPanel>
 
                 <!-- Control Buttons -->
-                <StackPanel Grid.Row="3" 
-                            Orientation="Horizontal" 
+                <StackPanel Grid.Row="3"
+                            Orientation="Horizontal"
                             HorizontalAlignment="Center">
-                        <Button Content="Start Timer" 
-                            Command="{Binding StartTimerCommand}"
-                            Style="{StaticResource ModernButton}"
-                            Width="160"
-                            Height="50"
-                            FontSize="15"
+                    <Button Content="{Binding TimerPrimaryActionText}"
+                            Command="{Binding TimerPrimaryActionCommand}"
+                            Style="{StaticResource TimerPrimaryActionButton}"
                             Margin="0,0,12,0"/>
-                    <Button Content="Pause" 
-                            Command="{Binding PauseTimerCommand}"
+                    <Button Content="Reset"
+                            Command="{Binding ResetTimerCommand}"
                             Style="{StaticResource SecondaryButton}"
                             Width="120"
-                            Height="50"
-                        FontSize="15"
-                        Margin="0,0,12,0"/>
-                    <Button Content="Reset" 
-                        Command="{Binding ResetTimerCommand}"
-                        Style="{StaticResource SecondaryButton}"
-                        Width="120"
-                        Height="50"
-                        FontSize="15"/>
+                            Height="56"
+                            FontSize="15"/>
                 </StackPanel>
             </Grid>
         </Border>

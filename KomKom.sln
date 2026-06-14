@@ -5,6 +5,8 @@ VisualStudioVersion = 17.14.36705.20 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KomKom", "KomKom\KomKom.csproj", "{7F241DB7-6807-4EF0-BB30-CE8A0AEEC0D9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00B0C04F79EF}") = "KomKom.Setup", "KomKom.Setup\KomKom.Setup.wixproj", "{A6F3D7A9-6C13-4F6A-9D3C-2B0F6E1D9D01}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{7F241DB7-6807-4EF0-BB30-CE8A0AEEC0D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7F241DB7-6807-4EF0-BB30-CE8A0AEEC0D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7F241DB7-6807-4EF0-BB30-CE8A0AEEC0D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A6F3D7A9-6C13-4F6A-9D3C-2B0F6E1D9D01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6F3D7A9-6C13-4F6A-9D3C-2B0F6E1D9D01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6F3D7A9-6C13-4F6A-9D3C-2B0F6E1D9D01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6F3D7A9-6C13-4F6A-9D3C-2B0F6E1D9D01}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

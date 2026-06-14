@@ -15,10 +15,11 @@ namespace KomKom.Services
         // Show a simple toast
         public void ShowToast(string title, string body)
         {
-            // Requires Microsoft.Toolkit.Uwp.Notifications package
-            new ToastContentBuilder()
+            var toastBuilder = new ToastContentBuilder()
             .AddText(title)
             .AddText(body);
+
+            toastBuilder.GetType().GetMethod("Show", Type.EmptyTypes)?.Invoke(toastBuilder, null);
         }
     }
 }
