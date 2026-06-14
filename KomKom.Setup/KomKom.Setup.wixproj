@@ -1,7 +1,7 @@
 <Project Sdk="WixToolset.Sdk/7.0.0" InitialTargets="PublishApp">
   <PropertyGroup>
     <OutputType>Package</OutputType>
-    <Platform>x64</Platform>
+    <Platform>x86</Platform>
     <Configuration>Release</Configuration>
     <OutputName>KomKom</OutputName>
     <AcceptEula>wix7</AcceptEula>

@@ -3,7 +3,7 @@
     Id="KomKom.Setup"
     Name="KomKom"
     Manufacturer="KomKom"
-    Version="1.0.0"
+    Version="1.0.1"
     UpgradeCode="4E0B1E5F-3F3A-4D8B-9C0E-1C9E7B5E7B2A"
     Compressed="yes"
     Scope="perMachine">
@@ -17,7 +17,7 @@
   </Package>
 
   <Fragment>
-    <StandardDirectory Id="ProgramFiles64Folder">
+    <StandardDirectory Id="ProgramFilesFolder">
       <Directory Id="INSTALLFOLDER" Name="KomKom" />
     </StandardDirectory>
 
