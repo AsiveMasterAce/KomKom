@@ -404,7 +404,7 @@
                                                 FontSize="11"
                                                 Margin="0">
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                                <svgc:SvgViewbox Source="/icons/app/trash.svg"
+                                                <svgc:SvgViewbox Source="/icons/app/trash-svgrepo-com.svg"
                                                                  Width="12"
                                                                  Height="12"
                                                                  Margin="0,0,6,0"/>

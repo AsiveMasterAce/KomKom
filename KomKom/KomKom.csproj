@@ -21,7 +21,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Resource Include="icons\icon.ico" />
-    <Resource Include="icons\app\trash.svg" />
+    <Resource Include="icons\app\trash-svgrepo-com.svg" />
   </ItemGroup>
 
 </Project>
