@@ -2,6 +2,10 @@
 
 KomKom is a Windows WPF task manager with a built-in timer, SQLite-backed task storage, toast notifications, and a packaged installer project.
 
+## Download
+
+Get the latest Windows x64 release here: [KomKom-publish-win-x64.zip](https://github.com/AsiveMasterAce/KomKom/releases/download/new/KomKom-publish-win-x64.zip)
+
 ## What it does
 
 - Create and manage scheduled tasks with a title, priority, tags, and completion state.
